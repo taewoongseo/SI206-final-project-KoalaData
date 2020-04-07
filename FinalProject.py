@@ -12,34 +12,38 @@ business_id = 'CW46zBqGxTKPQPaKeWtImg'
 endpoint = 'https://api.yelp.com/v3/businesses/search'
 headers = {'Authorization': 'bearer %s' % api_key}
 
-#Have a user type in a city on Yelp
-city_input = input('Please type the city name: ' )
+print('Examples of college towns: Ann Arbor, East Lansing, Berkeley, Madison, Boulder, State College, Ithaca, Eugene, ...')
+city_name = input('Please type in a college town name: ')
 
-parameters = {'term': 'restaurants', 'limit': 20, 'radius': 9000, 'location': city_input}
+parameters = {'term': 'restaurants', 'limit': 20, 'radius': 9000, 'location': city_name}
 
 #Request 20 restaurants in that city
 yelp_r = requests.get(url = endpoint, params = parameters, headers = headers)
 
 yelp_data = yelp_r.json()
 
-#Set up a database
-conn = sqlite3.connect('spider.sqlite')
-cur = conn.cursor()
-cur.execute('''CREATE TABLE IF NOT EXISTS Yelp (name TEXT, rating FLOAT, rating_count INTEGER)''')
+biz_names = []
+biz_ratings = []
+biz_review_counts = []
 
-
-#Idk if I need to do the following
-yelp_lst = []
-yelp_d = {}
-
-#IDK if I have to do the follwoing - Now add name, rating, and review_count to a dictionary
+#Add name, rating, and review_count to each list
 for biz in yelp_data['businesses']:
-    yelp_d['name'] = biz['name']
-    yelp_d['rating'] = biz['rating']
-    yelp_d['rating_count'] = biz['review_count']
-    yelp_lst.append(yelp_d)
+    biz_names.append(biz['name'])
+    biz_ratings.append(biz['rating'])
+    biz_review_counts.append(biz['review_count'])
 
-print(yelp_lst)
+#Set up a database
+conn = sqlite3.connect('restaurant_data.db')
+cur = conn.cursor()
+cur.execute('CREATE TABLE IF NOT EXISTS Yelp (name TEXT, city_name TEXT, rating FLOAT, review_count INTEGER)')
+
+
+
+for i in range(len(biz_names)):
+    cur.execute('INSERT OR IGNORE INTO Yelp (name, city_name, rating, review_count) VALUES (?, ?, ?, ?)', (biz_names[i], city_name, biz_ratings[i], biz_review_counts[i]))
+
+
+conn.commit()
 
 
 #Use the dictionary and add to the table using SQL
