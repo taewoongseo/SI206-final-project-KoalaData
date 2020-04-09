@@ -40,16 +40,6 @@ for biz in yelp_data['businesses']:
     coord_tup = str(latitude) + ',' + str(longitude)
     biz_coordinates.append(coord_tup)
 
-#Set up a database
-conn = sqlite3.connect('restaurant_data.db')
-cur = conn.cursor()
-cur.execute('CREATE TABLE IF NOT EXISTS Yelp (name TEXT, city TEXT, rating REAL, yelp_review_count INTEGER, coordinates TEXT)')
-
-
-for i in range(len(biz_names)):
-    cur.execute('INSERT OR IGNORE INTO Yelp (name, city, rating, yelp_review_count, coordinates) VALUES (?, ?, ?, ?, ?)', (biz_names[i], city_name, biz_ratings[i], biz_review_counts[i], biz_coordinates[i]))
-conn.commit()
-
 
 
 #Requesting data from Google API 
@@ -59,7 +49,7 @@ endpoint2 = 'https://maps.googleapis.com/maps/api/place/findplacefromtext/json?'
 for i in range(len(biz_names)):
     restaurant_name_for_google = biz_names[i]
     coord_tup_google = biz_coordinates[i]
-    parameters2 = {'key': "AIzaSyAZb7lF87OYuosZWGdDMvNnVaGxazfadXk", "input": restaurant_name_for_google, "inputtype": "textquery", 'locationbias': 'circle:1@' + coord_tup_google, 'fields': "name,user_ratings_total,geometry"}
+    parameters2 = {'key': "AIzaSyAZb7lF87OYuosZWGdDMvNnVaGxazfadXk", "input": restaurant_name_for_google, "inputtype": "textquery", 'locationbias': 'circle:1@' + coord_tup_google, 'fields': "name,user_ratings_total,geometry,formatted_address"}
     google_r = requests.get(url = endpoint2, params = parameters2)
     google_data = google_r.json()
     google_dict.append(google_data)
@@ -70,22 +60,48 @@ google_coordinates = []
 
 for google_biz in google_dict:
     google_names.append(google_biz['candidates'][0]['name'])
-    google_review_counts.append(google_biz['candidates'][0]['user_ratings_total'])
+    if 'user_ratings_total' in google_biz['candidates'][0].keys():
+        google_review_counts.append(google_biz['candidates'][0]['user_ratings_total'])
+    else:
+        google_review_counts.append(0)
     g_latitude = google_biz['candidates'][0]['geometry']['location']['lat']
     g_longitude = google_biz['candidates'][0]['geometry']['location']['lng']
     g_coord_tup = str(g_latitude) + ',' + str(g_longitude)
     google_coordinates.append(g_coord_tup)
 
-for i in range(len(google_names)):
-    if (biz_names[i].lower() in google_names[i].lower()) or (google_names[i].lower() in biz_names[i].lower()):
-        google_names[i] = biz_names[i]
-
-#Set up a database
+#restaurant_id set up 
 conn = sqlite3.connect('restaurant_data.db')
 cur = conn.cursor()
-cur.execute('CREATE TABLE IF NOT EXISTS Google (name TEXT, google_review_count INTEGER, coordinates TEXT)')
+cur.execute(' SELECT count(name) FROM sqlite_master WHERE type= ? AND name= ? ', ('table', 'Yelp', ))
+if cur.fetchone()[0] == 1:
+    cur.execute('SELECT restaurant_id FROM Yelp WHERE restaurant_id = (SELECT max(restaurant_id) FROM Yelp)')
+    yelp_restaurant_id = cur.fetchone()[0] + 1 
+else:
+    yelp_restaurant_id = 1
+
+
+#Set up a database for Yelp
+cur.execute('CREATE TABLE IF NOT EXISTS Yelp (restaurant_id INTEGER, name TEXT, city TEXT, rating REAL, yelp_review_count INTEGER, coordinates TEXT)')
+
+for i in range(len(biz_names)):
+    cur.execute('INSERT OR IGNORE INTO Yelp (restaurant_id, name, city, rating, yelp_review_count, coordinates) VALUES (?, ?, ?, ?, ?, ?)', (yelp_restaurant_id, biz_names[i], city_name, biz_ratings[i], biz_review_counts[i], biz_coordinates[i]))
+    yelp_restaurant_id += 1
+conn.commit()
+
+cur.execute(' SELECT count(name) FROM sqlite_master WHERE type= ? AND name= ? ', ('table', 'Google', ))
+if cur.fetchone()[0] == 1:
+    cur.execute('SELECT restaurant_id FROM Yelp WHERE restaurant_id = (SELECT max(restaurant_id) FROM Google)')
+    google_restaurant_id = cur.fetchone()[0] + 1 
+else:
+    google_restaurant_id = 1
+    
+#Set up a database for Google
+conn = sqlite3.connect('restaurant_data.db')
+cur = conn.cursor()
+cur.execute('CREATE TABLE IF NOT EXISTS Google (restaurant_id INTEGER, name TEXT, google_review_count INTEGER, coordinates TEXT)')
 
 
 for i in range(len(google_names)):
-    cur.execute('INSERT OR IGNORE INTO Google (name, google_review_count, coordinates) VALUES (?, ?, ?)', (google_names[i], google_review_counts[i], google_coordinates[i]))
+    cur.execute('INSERT OR IGNORE INTO Google (restaurant_id, name, google_review_count, coordinates) VALUES (?, ?, ?, ?)', (google_restaurant_id, google_names[i], google_review_counts[i], google_coordinates[i]))
+    google_restaurant_id += 1
 conn.commit()
