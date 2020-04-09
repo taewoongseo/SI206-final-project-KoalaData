@@ -76,6 +76,10 @@ for google_biz in google_dict:
     g_coord_tup = str(g_latitude) + ',' + str(g_longitude)
     google_coordinates.append(g_coord_tup)
 
+for i in range(len(google_names)):
+    if (biz_names[i].lower() in google_names[i].lower()) or (google_names[i].lower() in biz_names[i].lower()):
+        google_names[i] = biz_names[i]
+
 #Set up a database
 conn = sqlite3.connect('restaurant_data.db')
 cur = conn.cursor()
