@@ -43,11 +43,11 @@ for biz in yelp_data['businesses']:
 #Set up a database
 conn = sqlite3.connect('restaurant_data.db')
 cur = conn.cursor()
-cur.execute('CREATE TABLE IF NOT EXISTS Yelp (name TEXT, city TEXT, rating REAL, review_count INTEGER, coordinates TEXT)')
+cur.execute('CREATE TABLE IF NOT EXISTS Yelp (name TEXT, city TEXT, rating REAL, yelp_review_count INTEGER, coordinates TEXT)')
 
 
 for i in range(len(biz_names)):
-    cur.execute('INSERT OR IGNORE INTO Yelp (name, city, rating, review_count, coordinates) VALUES (?, ?, ?, ?, ?)', (biz_names[i], city_name, biz_ratings[i], biz_review_counts[i], biz_coordinates[i]))
+    cur.execute('INSERT OR IGNORE INTO Yelp (name, city, rating, yelp_review_count, coordinates) VALUES (?, ?, ?, ?, ?)', (biz_names[i], city_name, biz_ratings[i], biz_review_counts[i], biz_coordinates[i]))
 conn.commit()
 
 
@@ -79,9 +79,9 @@ for google_biz in google_dict:
 #Set up a database
 conn = sqlite3.connect('restaurant_data.db')
 cur = conn.cursor()
-cur.execute('CREATE TABLE IF NOT EXISTS Google (name TEXT, review_count INTEGER, coordinates TEXT)')
+cur.execute('CREATE TABLE IF NOT EXISTS Google (name TEXT, google_review_count INTEGER, coordinates TEXT)')
 
 
 for i in range(len(google_names)):
-    cur.execute('INSERT OR IGNORE INTO Google (name, review_count, coordinates) VALUES (?, ?, ?)', (google_names[i], google_review_counts[i], google_coordinates[i]))
+    cur.execute('INSERT OR IGNORE INTO Google (name, google_review_count, coordinates) VALUES (?, ?, ?)', (google_names[i], google_review_counts[i], google_coordinates[i]))
 conn.commit()
