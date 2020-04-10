@@ -4,6 +4,8 @@
 
 import sqlite3
 import json
+import os
+import csv
 
 conn = sqlite3.connect('restaurant_data.db')
 cur = conn.cursor()
@@ -20,6 +22,7 @@ rows = cur.fetchall()
 for row in rows:
     tot_yelp += row[1]
     tot_google += row[2]
+    print(row)
 print(tot_yelp)
 print(tot_google)
 
@@ -49,7 +52,31 @@ for row in rows:
 
 print(yelp_d)
 print(google_d)
-        
+
+percent_difference_d = {}
+for city in yelp_d.keys():
+    yelp_tot_city = yelp_d[city]
+    if city in google_d.keys():
+        google_tot_city = google_d[city]
+    per_difference_city = (google_tot_city/yelp_tot_city)*100
+    percent_difference_d[city] = per_difference_city
+
+print(percent_difference_d)
 
 
+#Add to CSV file
+dir = os.path.dirname(__file__)
+outFile = open(os.path.join(dir, 'yelp_google_raw_data.csv'), "w")
+csv_writer = csv.writer(outFile, delimiter = ',', quotechar = '"', quoting = csv.QUOTE_MINIMAL)
+csv_writer.writerow(["Name", "Yelp Review Count", "Google Review Count", "City"])
+for i in rows:
+    csv_writer.writerow([i[0], i[1], i[2], i[3]])
+
+dir = os.path.dirname(__file__)
+outFile = open(os.path.join(dir, 'yelp_google_calculations.csv'), "w")
+csv_writer = csv.writer(outFile, delimiter = ',', quotechar = '"', quoting = csv.QUOTE_MINIMAL)
+csv_writer.writerow(["City", "Total Yelp Review Count", "Total Google Review Count", "Google To Yelp Ratio in %"])
+for i in yelp_d.keys():
+    csv_writer.writerow([i, yelp_d[i], google_d[i], percent_difference_d[i]])
+csv_writer.writerow(['Total', tot_yelp, tot_google, difference])
 
