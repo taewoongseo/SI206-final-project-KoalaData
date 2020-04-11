@@ -6,6 +6,8 @@ import sqlite3
 import json
 import os
 import csv
+import numpy as np
+import matplotlib.pyplot as plt
 
 conn = sqlite3.connect('restaurant_data.db')
 cur = conn.cursor()
@@ -29,8 +31,6 @@ print(tot_google)
 #how much is Google bigger than Yelp?
 difference = (tot_google/tot_yelp)*100
 print(str(difference) + '%')
-
-
 
 #Now... by cities!
 yelp_d = {}
@@ -80,3 +80,66 @@ for i in yelp_d.keys():
     csv_writer.writerow([i, yelp_d[i], google_d[i], percent_difference_d[i]])
 csv_writer.writerow(['Total', tot_yelp, tot_google, difference])
 
+#Visualization for total counts
+
+N = len(yelp_d.keys())
+width = 0.35
+ind = np.arange(N)
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
+
+yelp_vals = []
+google_vals = []
+city_vals = []
+for city in yelp_d.keys():
+    yelp_val = yelp_d[city]
+    yelp_vals.append(yelp_val)
+    google_val = google_d[city]
+    google_vals.append(google_val)
+    city_vals.append(city)
+
+label_tups = tuple(city_vals)
+
+p1 = ax.bar(ind, yelp_vals, width, color = 'red')
+p2 = ax.bar(ind + width, google_vals, width, color = 'blue')
+
+ax.set_xticks(ind + width / 2)
+ax.set_xticklabels(label_tups)
+ax.legend((p1[0], p2[0]), ('Yelp', 'Google'))
+ax.autoscale_view()
+
+ax.set(xlabel = 'Cities', ylabel = 'Total Review Counts', title = 'Total Review Counts on Yelp vs Google of Restaurants in Different Cities')
+
+#Visualization for % difference
+N2 = len(yelp_d.keys())
+width2 = 0.4
+ind2 = np.arange(N)
+
+percent_vals = []
+for city in percent_difference_d.keys():
+    percent_vals.append(percent_difference_d[city])
+avg = difference
+line = 100
+
+
+fig = plt.figure()
+ax2 = fig.add_subplot(111)
+
+
+p = ax2.bar(ind2, percent_vals, width2, color = 'cyan')
+
+
+ax2.set_xticks(ind2)
+ax2.set_xticklabels(label_tups)
+ax2.autoscale_view()
+
+avg_line = ax2.axhline(y = avg, color = 'k', linestyle = "--")
+std_line = ax2.axhline(y = line, color = 'b', linestyle = ':')
+
+ax2.legend((avg_line, std_line), ('Average ratio', '100 percent ratio'))
+
+
+ax2.set(xlabel = 'Cities', ylabel = 'Google to Yelp review count ratio in %', title = 'Google To Yelp Review Count Ratio (%) in Different Cities')
+
+plt.show()
