@@ -13,8 +13,8 @@ business_id = 'CW46zBqGxTKPQPaKeWtImg'
 endpoint = 'https://api.yelp.com/v3/businesses/search'
 headers = {'Authorization': 'bearer %s' % api_key}
 
-print('Examples of college towns: Ann Arbor, East Lansing, Berkeley, Madison, Boulder, State College, Ithaca, Eugene, ...')
-city_name = input('Please type in a college town name: ')
+print('Examples of cities to compare: Ann Arbor, Seattle, Vancouver, New York City, Hong Kong, Los Angeles, Tokyo, ...')
+city_name = input('Please type in a city name that you have not entered before: ')
 
 parameters = {'term': 'restaurants', 'limit': 20, 'radius': 9000, 'location': city_name}
 
