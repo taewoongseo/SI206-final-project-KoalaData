@@ -28,11 +28,11 @@ for row in rows:
 print(tot_yelp)
 print(tot_google)
 
-#how much is Google bigger than Yelp?
+#Calculating the ratio of Google count to Yelp count
 difference = (tot_google/tot_yelp)*100
 print(str(difference) + '%')
 
-#Now... by cities!
+#Making dictionaries of Yelp and Google results by cities
 yelp_d = {}
 google_d = {}
 
@@ -81,7 +81,6 @@ for i in yelp_d.keys():
 csv_writer.writerow(['Total', tot_yelp, tot_google, difference])
 
 #Visualization for total counts
-
 N = len(yelp_d.keys())
 width = 0.35
 ind = np.arange(N)
@@ -134,6 +133,7 @@ ax2.set_xticks(ind2)
 ax2.set_xticklabels(label_tups)
 ax2.autoscale_view()
 
+#Two horizontal lines for threshold
 avg_line = ax2.axhline(y = avg, color = 'k', linestyle = "--")
 std_line = ax2.axhline(y = line, color = 'b', linestyle = ':')
 
