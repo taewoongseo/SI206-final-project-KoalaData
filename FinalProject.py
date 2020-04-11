@@ -31,14 +31,17 @@ biz_review_counts = []
 biz_coordinates = [] 
 
 #Add name, rating, and review_count to each list
-for biz in yelp_data['businesses']:
-    biz_names.append(biz['name'])
-    biz_ratings.append(biz['rating'])
-    biz_review_counts.append(biz['review_count'])
-    latitude = biz['coordinates']['latitude']
-    longitude = biz['coordinates']['longitude']
-    coord_tup = str(latitude) + ',' + str(longitude)
-    biz_coordinates.append(coord_tup)
+try:
+    for biz in yelp_data['businesses']:
+        biz_names.append(biz['name'])
+        biz_ratings.append(biz['rating'])
+        biz_review_counts.append(biz['review_count'])
+        latitude = biz['coordinates']['latitude']
+        longitude = biz['coordinates']['longitude']
+        coord_tup = str(latitude) + ',' + str(longitude)
+        biz_coordinates.append(coord_tup)
+except:
+    print("Sorry, your city is not featured on Yelp :( Try another city!")
 
 
 
@@ -58,16 +61,19 @@ google_names = []
 google_review_counts = []
 google_coordinates = []
 
-for google_biz in google_dict:
-    google_names.append(google_biz['candidates'][0]['name'])
-    if 'user_ratings_total' in google_biz['candidates'][0].keys():
-        google_review_counts.append(google_biz['candidates'][0]['user_ratings_total'])
-    else:
-        google_review_counts.append(0)
-    g_latitude = google_biz['candidates'][0]['geometry']['location']['lat']
-    g_longitude = google_biz['candidates'][0]['geometry']['location']['lng']
-    g_coord_tup = str(g_latitude) + ',' + str(g_longitude)
-    google_coordinates.append(g_coord_tup)
+try:
+    for google_biz in google_dict:
+        google_names.append(google_biz['candidates'][0]['name'])
+        if 'user_ratings_total' in google_biz['candidates'][0].keys():
+            google_review_counts.append(google_biz['candidates'][0]['user_ratings_total'])
+        else:
+            google_review_counts.append(0)
+        g_latitude = google_biz['candidates'][0]['geometry']['location']['lat']
+        g_longitude = google_biz['candidates'][0]['geometry']['location']['lng']
+        g_coord_tup = str(g_latitude) + ',' + str(g_longitude)
+        google_coordinates.append(g_coord_tup)
+except:
+    print("Sorry, some restaurants in the city are not matching Google's results :( Try another city!")
 
 #restaurant_id set up 
 conn = sqlite3.connect('restaurant_data.db')
