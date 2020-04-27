@@ -27,8 +27,8 @@ def process_data(filename):
         tot_google += row[2]
 
     #Calculating the ratio of Google count to Yelp count
-    difference = (tot_google/tot_yelp)*100
-    print(str(difference) + '%')
+    difference_raw = (tot_google/tot_yelp)*100
+    difference = round(difference_raw, 1)
 
     #Making dictionaries of Yelp and Google results by cities
     yelp_d = {}
@@ -53,7 +53,8 @@ def process_data(filename):
         yelp_tot_city = yelp_d[city]
         if city in google_d.keys():
             google_tot_city = google_d[city]
-        per_difference_city = (google_tot_city/yelp_tot_city)*100
+        per_difference_city_raw = (google_tot_city/yelp_tot_city)*100
+        per_difference_city = round(per_difference_city_raw, 1)
         percent_difference_d[city] = per_difference_city
 
     #Add to CSV file
